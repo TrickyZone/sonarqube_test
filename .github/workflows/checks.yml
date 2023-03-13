@@ -1,99 +1,99 @@
-name: Check feed
-
-on:
-  pull_request:
-    branches:
-      - master
-    # paths:
-    #   - 'test_feed/**/*'
-  push:
-    branches:
-      - master
-    # paths:
-    #   - 'test_feed/**/*'
-
-env:
-  ORG: test
-  PROJECT_NAME: learning
-  AUTHOR: MuZakkir Saifi
-jobs:
-  check_feedservice:
-    env:
-      MODULE_NAME: feed_service
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-        
-    # - name: Cache SBT
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: |
-    #       ~/.ivy2/cache
-    #       ~/.sbt
-    #     key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-
-    - name: Run Horusec
-      if: github.event_name == 'push'
-      env:
-        WORKING_DIR: test_feed
-        AUTHOR: MuZakkir
-        HORUSEC_CLI_RETURN_ERROR_IF_FOUND_VULNERABILITY: "false"
-      id: run_horusec
-      uses: fike/horusec-action@v0.2.2
-      with:
-        arguments: -p ./$WORKING_DIR --config-file-path=$WORKING_DIR/horusec-config.json -O $WORKING_DIR/sonarqube.json --return-error=false
-
-    # - name: Run test cases and generate reports for Feed
-    #   working-directory: test_feed
-    #   env:
-    #     URL: "jdbc:h2:mem:test;MODE=Oracle;"
-    #     DRIVER: "org.h2.Driver"
-    #     USERNAME: 
-    #     PASSWORD:
-    #   run: |
-    #     sudo timedatectl set-timezone Asia/Kolkata
-    #     sbt cpd
-    #     sbt scapegoat
-    #     sbt scalastyle  
-    #     sbt coverage test coverageReport      
-
-    - name: Sonar coverage report
-      if: github.event_name == 'push'
-      working-directory: test_feed
-      run:
-        # sbt sonarScan 
-        mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
+# name: Check feed
 
 # on:
-#   # Trigger analysis when pushing in master or pull requests, and when creating
-#   # a pull request. 
+#   pull_request:
+#     branches:
+#       - master
+#     # paths:
+#     #   - 'test_feed/**/*'
 #   push:
 #     branches:
 #       - master
-#   pull_request:
-#       types: [opened, synchronize, reopened]
+#     # paths:
+#     #   - 'test_feed/**/*'
 
-# name: SonarQube Scan
+# env:
+#   ORG: test
+#   PROJECT_NAME: learning
+#   AUTHOR: MuZakkir Saifi
 # jobs:
-#   sonarqube:
-#     name: SonarQube Trigger
+#   check_feedservice:
+#     env:
+#       MODULE_NAME: feed_service
 #     runs-on: ubuntu-latest
 #     steps:
-#     - name: Checking out
-#       uses: actions/checkout@master
+#     - uses: actions/checkout@v2
+
+#     - name: Set up JDK 1.8
+#       uses: actions/setup-java@v1
 #       with:
-#         # Disabling shallow clone is recommended for improving relevancy of reporting
-#         fetch-depth: 0
-#     - name: SonarQube Scan
-#       uses: kitabisa/sonarqube-action@v1.2.0
+#         java-version: 1.8
+        
+#     # - name: Cache SBT
+#     #   uses: actions/cache@v2
+#     #   with:
+#     #     path: |
+#     #       ~/.ivy2/cache
+#     #       ~/.sbt
+#     #     key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
+
+#     - name: Run Horusec
+#       if: github.event_name == 'push'
+#       env:
+#         WORKING_DIR: test_feed
+#         AUTHOR: MuZakkir
+#         HORUSEC_CLI_RETURN_ERROR_IF_FOUND_VULNERABILITY: "false"
+#       id: run_horusec
+#       uses: fike/horusec-action@v0.2.2
 #       with:
-#         host: ${{ secrets.SONAR_HOST }}
-#         login: ${{ secrets.SONAR_TOKEN }}
-#         projectBaseDir: "test_feed/**/*"
-#         projectKey: "feed_service"
+#         arguments: -p ./$WORKING_DIR --config-file-path=$WORKING_DIR/horusec-config.json -O $WORKING_DIR/sonarqube.json --return-error=false
+
+#     # - name: Run test cases and generate reports for Feed
+#     #   working-directory: test_feed
+#     #   env:
+#     #     URL: "jdbc:h2:mem:test;MODE=Oracle;"
+#     #     DRIVER: "org.h2.Driver"
+#     #     USERNAME: 
+#     #     PASSWORD:
+#     #   run: |
+#     #     sudo timedatectl set-timezone Asia/Kolkata
+#     #     sbt cpd
+#     #     sbt scapegoat
+#     #     sbt scalastyle  
+#     #     sbt coverage test coverageReport      
+
+#     - name: Sonar coverage report
+#       if: github.event_name == 'push'
+#       working-directory: test_feed
+#       run:
+#         # sbt sonarScan 
+#         mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+
+on:
+  # Trigger analysis when pushing in master or pull requests, and when creating
+  # a pull request. 
+  push:
+    branches:
+      - master
+  pull_request:
+      types: [opened, synchronize, reopened]
+
+name: SonarQube Scan
+jobs:
+  sonarqube:
+    name: SonarQube Trigger
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checking out
+      uses: actions/checkout@master
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: SonarQube Scan
+      uses: kitabisa/sonarqube-action@v1.2.0
+      with:
+        host: ${{ secrets.SONAR_HOST }}
+        login: ${{ secrets.SONAR_TOKEN }}
+        projectBaseDir: "test_feed/**/*"
+        projectKey: "feed_service"
