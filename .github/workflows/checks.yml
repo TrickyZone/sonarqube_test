@@ -67,4 +67,4 @@ jobs:
       working-directory: test_feed
       run:
         # sbt sonarScan 
-        mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        mvn sonar:sonar -Dsonar.login=squ_bb8ae09334477debef2f01fe1b3bc87f3bf4d03c
