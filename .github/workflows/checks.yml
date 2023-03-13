@@ -33,8 +33,10 @@ jobs:
       - name: SonarQube Scan # Run the SonarQube scan using the sonarsource/sonarqube-scan-action.
         uses: sonarsource/sonarqube-scan-action@v1
         with:
-          host: ${{ secrets.SONAR_HOST }}
-          login: ${{ secrets.SONAR_TOKEN }}        
+          serverUrl: ${{ secrets.SONAR_HOST }}
+          token: ${{ secrets.SONAR_TOKEN }}
+          # host: ${{ secrets.SONAR_HOST }}
+          # login: ${{ secrets.SONAR_TOKEN }}        
           # sonar-token: ${{ secrets.SONAR_TOKEN }} # Pass the SonarQube token as a secret.
           project-key: my-java-app # Specify the project key used by SonarQube.
           project-name: My Java Application # Specify the project name used by SonarQube.
