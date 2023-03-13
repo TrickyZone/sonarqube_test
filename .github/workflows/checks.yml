@@ -30,10 +30,18 @@ jobs:
             ${{ runner.os }}-sonar # Restore the cache based on the operating system used by the runner.
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
+        uses: kitabisa/sonarqube-action@v1.2.0
+        with:
+          host: ${{ secrets.SONARQUBE_HOST }}
+          login: ${{ secrets.SONARQUBE_TOKEN }}
+      
+      
+      
+      # - name: SonarQube Scan
+      #   uses: sonarsource/sonarqube-scan-action@master
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
       # - name: SonarQube Scan # Run the SonarQube scan using the sonarsource/sonarqube-scan-action.
       #   uses: sonarsource/sonarqube-scan-action@v1
       #   with:
