@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeedDataService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">feed-service</a> &gt; <a href="index.source.html" class="el_package">com.knoldus.feedservice.service</a> &gt; <span class="el_source">FeedDataService.java</span></div><h1>FeedDataService.java</h1><pre class="source lang-java linenums">package com.knoldus.feedservice.service;
+
+import com.knoldus.feedservice.dao.FeedCommentRepository;
+import com.knoldus.feedservice.dao.FeedDataRepository;
+import com.knoldus.feedservice.dao.FeedLikeRepository;
+import com.knoldus.feedservice.exception.RecordNotFoundException;
+import com.knoldus.feedservice.model.FeedComment;
+import com.knoldus.feedservice.model.FeedData;
+import com.knoldus.feedservice.model.FeedStats;
+import com.knoldus.feedservice.model.UserActivity;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.data.domain.*;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.knoldus.feedservice.util.Constants.*;
+import static com.knoldus.feedservice.util.TimeDifference.getTimeDifference;
+
+@Service
+<span class="fc" id="L25">@Slf4j</span>
+<span class="fc" id="L26">public class FeedDataService {</span>
+<span class="fc" id="L27">    private static final Integer DURATION = 60;</span>
+<span class="fc" id="L28">    private static final Integer DAYS = 1;</span>
+    @Autowired
+    private FeedDataRepository feedDataRepository;
+
+    @Autowired
+    private FeedLikeRepository feedLikeRepository;
+    @Autowired
+    private FeedCommentRepository feedCommentRepository;
+    @Autowired
+    Environment environment;
+
+
+    public List&lt;FeedData&gt; getFeedData(int pageNo) {
+<span class="fc" id="L41">        int pageSize = Integer.parseInt(Objects.requireNonNull(environment.getProperty(PAGE_SIZE_KEY)));</span>
+<span class="fc" id="L42">        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.Direction.DESC, FEED_TIME_KEY);</span>
+<span class="fc" id="L43">        Date currentdate = new Date();</span>
+<span class="fc" id="L44">        return feedDataRepository.findAll(pageable)</span>
+<span class="fc" id="L45">                .stream().peek(feedData -&gt; feedData.setLapseTimeDifference(getTimeDifference(currentdate, feedData.getFeedTime()))).collect(Collectors.toList());</span>
+    }
+
+    public List&lt;FeedData&gt; getFeedDataWithTenantId(String tenantId, int pageNo) {
+<span class="fc" id="L49">        int pageSize = Integer.parseInt(Objects.requireNonNull(environment.getProperty(PAGE_SIZE_KEY)));</span>
+<span class="fc" id="L50">        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.Direction.DESC, FEED_TIME_KEY);</span>
+<span class="fc" id="L51">        Date endDate = new Date();</span>
+<span class="fc" id="L52">        Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L53">        cal.setTime(new Date());</span>
+<span class="fc" id="L54">        cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH)-6);</span>
+<span class="fc" id="L55">        Date startDate = cal.getTime();</span>
+
+<span class="fc" id="L57">        return feedDataRepository.findAllByTenantIdAndFeedTimeBetween(tenantId, startDate, endDate,pageable)</span>
+<span class="fc" id="L58">                .stream().peek(feedData -&gt; feedData.setLapseTimeDifference(getTimeDifference(endDate, feedData.getFeedTime()))).collect(Collectors.toList());</span>
+    }
+
+    public Optional&lt;FeedData&gt; getFeedDataByFeedId(int feedId) {
+<span class="fc" id="L62">        return feedDataRepository.findById(feedId);</span>
+    }
+
+    public List&lt;FeedComment&gt; getFeedCommentsOnFeedId(int feedId, int pageNo) {
+<span class="fc" id="L66">        FeedData data = feedDataRepository.findById(feedId).orElseThrow(() -&gt; new RecordNotFoundException(&quot;FeedId not found&quot;));</span>
+<span class="fc" id="L67">        int pageSize = Integer.parseInt(Objects.requireNonNull(environment.getProperty(PAGE_SIZE_KEY)));</span>
+<span class="fc" id="L68">        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.Direction.DESC, FEED_TIME_KEY);</span>
+<span class="fc" id="L69">        List&lt;FeedComment&gt; data1 = feedCommentRepository.findByFeedDataOrderByFeedCommentIdDesc(data, pageable);</span>
+<span class="fc" id="L70">        return data1;</span>
+    }
+
+    public FeedStats getFeedDataStatsByFeedId(int feedId) {
+<span class="fc" id="L74">        FeedStats feedStats = new FeedStats(feedId, feedLikeRepository.totalNoOfLikesByFeedId(feedId), feedLikeRepository.totalNoOfDislikesByFeedId(feedId), feedCommentRepository.totalNoOfCommentsByFeedId(feedId));</span>
+<span class="fc" id="L75">        return feedStats;</span>
+    }
+
+
+    public FeedData postFeedData(FeedData feedData) {
+<span class="fc" id="L80">        return feedDataRepository.save(feedData);</span>
+    }
+
+    public void deleteFeedData() {
+<span class="fc" id="L84">        feedDataRepository.deleteAll();</span>
+<span class="fc" id="L85">    }</span>
+
+    public Optional&lt;FeedData&gt; updateFeedData(int id, FeedData feedData) {
+<span class="fc" id="L88">        Optional&lt;FeedData&gt; feedLikeRepositoryById = feedDataRepository.findById(id);</span>
+<span class="fc" id="L89">        feedLikeRepositoryById.ifPresent(b -&gt; b.setEmail(feedData.getEmail()));</span>
+<span class="fc" id="L90">        feedLikeRepositoryById.ifPresent(b -&gt; b.setContributionType(feedData.getContributionType()));</span>
+<span class="fc" id="L91">        feedLikeRepositoryById.ifPresent(b -&gt; b.setTitle(feedData.getTitle()));</span>
+<span class="fc" id="L92">        feedLikeRepositoryById.ifPresent(b -&gt; b.setDescription(feedData.getDescription()));</span>
+<span class="fc" id="L93">        feedLikeRepositoryById.ifPresent(b -&gt; b.setFeedTime(feedData.getFeedTime()));</span>
+<span class="fc" id="L94">        feedLikeRepositoryById.ifPresent(b -&gt; b.setUrl(feedData.getUrl()));</span>
+<span class="fc" id="L95">        feedLikeRepositoryById.ifPresent(b -&gt; feedDataRepository.save(b));</span>
+<span class="fc" id="L96">        return feedDataRepository.findById(id);</span>
+    }
+
+    public List&lt;FeedStats&gt; getAllLatestFeedDataStats(int pageNo) {
+<span class="fc" id="L100">        int pageSize = Integer.parseInt(environment.getProperty(PAGE_SIZE_KEY));</span>
+<span class="fc" id="L101">        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.Direction.DESC, FEED_ID_KEY);</span>
+<span class="fc" id="L102">        List&lt;FeedStats&gt; feedStats = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L103">        Page&lt;FeedData&gt; data = feedDataRepository.findAll(pageable);</span>
+<span class="fc" id="L104">        List&lt;FeedData&gt; list = data.toList();</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        for (int k = 0; k &lt; list.size(); k++) {</span>
+<span class="fc" id="L106">            int feedId = list.get(k).getFeedId();</span>
+<span class="fc" id="L107">            feedStats.add(new FeedStats(feedId, feedLikeRepository.totalNoOfLikesByFeedId(feedId), feedLikeRepository.totalNoOfDislikesByFeedId(feedId), feedCommentRepository.totalNoOfCommentsByFeedId(feedId)));</span>
+        }
+<span class="fc" id="L109">        Page&lt;FeedStats&gt; pages = new PageImpl&lt;&gt;(feedStats, pageable, feedStats.size());</span>
+<span class="fc" id="L110">        return pages.toList();</span>
+    }
+
+
+    public List&lt;UserActivity&gt; getAllDataByProfileEmail(int pageNo, String userEmail) {
+<span class="fc" id="L115">        int pageSize = Integer.parseInt(environment.getProperty(PAGE_SIZE_KEY));</span>
+<span class="fc" id="L116">        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.Direction.DESC, FEED_TIME_KEY);</span>
+<span class="fc" id="L117">        return getDataFromDifferentTable ( pageable,userEmail);</span>
+    }
+
+        private List&lt;UserActivity&gt; getDataFromDifferentTable (Pageable pageable, String userEmail){
+<span class="fc" id="L121">            Date currentdate = new Date();</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            return feedDataRepository.findbyUserEmailId(userEmail).stream().peek(userActivity -&gt; userActivity.setLapseTimeDifference(Objects.nonNull(userActivity.getFeedtime())?getTimeDifference(currentdate,userActivity.getFeedtime()):null)).collect(Collectors.toList());</span>
+        }
+
+    }
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

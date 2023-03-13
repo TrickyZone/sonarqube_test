@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeedLikeService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">feed-service</a> &gt; <a href="index.source.html" class="el_package">com.knoldus.feedservice.service</a> &gt; <span class="el_source">FeedLikeService.java</span></div><h1>FeedLikeService.java</h1><pre class="source lang-java linenums">package com.knoldus.feedservice.service;
+
+import com.knoldus.feedservice.dao.FeedDataRepository;
+import com.knoldus.feedservice.dao.FeedLikeRepository;
+import com.knoldus.feedservice.model.FeedData;
+import com.knoldus.feedservice.model.FeedLike;
+import com.knoldus.feedservice.model.SendEmailNotification;
+import com.knoldus.feedservice.util.EmailService;
+import java.util.Date;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.expression.ExpressionException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.knoldus.feedservice.util.Constants.PAGE_SIZE_KEY;
+
+@Service
+<span class="fc" id="L27">public class FeedLikeService {</span>
+
+    @Autowired
+    FeedLikeRepository feedLikeRepository;
+
+    @Autowired
+    private FeedDataRepository feedDataRepository;
+
+    @Autowired
+    Environment environment;
+
+    @Autowired
+    private EmailService emailService;
+
+    public List&lt;FeedLike&gt; getFeedLike() {
+<span class="fc" id="L42">        return (List&lt;FeedLike&gt;) feedLikeRepository.findAll();</span>
+    }
+
+    @Transactional
+    public FeedLike postFeedLike(int feedId, FeedLike feedLike) {
+
+<span class="fc" id="L48">        Optional&lt;FeedData&gt; optFeedData = feedDataRepository.findById(feedId);</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (optFeedData.isPresent()) {</span>
+<span class="fc" id="L50">            return updateFeedLike(feedLike, optFeedData, Collections.singletonList(optFeedData.get().getEmail()));</span>
+        }
+<span class="nc" id="L52">        return null;</span>
+    }
+
+    private FeedLike updateFeedLike(FeedLike feedLike, Optional&lt;FeedData&gt; optFeedData, List&lt;String&gt; recipientEmailList) {
+<span class="fc" id="L56">        List&lt;FeedLike&gt; feedFromDB = optFeedData.get().getFeedLike().stream()</span>
+<span class="fc" id="L57">                .filter(e -&gt; e.getEmail().equals(feedLike.getEmail())).collect(Collectors.toList());</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (!feedFromDB.isEmpty()) {</span>
+<span class="fc" id="L59">            FeedLike getData = feedFromDB.get(0);</span>
+<span class="pc bpc" id="L60" title="2 of 4 branches missed.">            if ((feedLike.getLikes() != null &amp;&amp; getData.getLikes() != null</span>
+<span class="pc bpc" id="L61" title="1 of 4 branches missed.">                    &amp;&amp; getData.getLikes() &amp;&amp; feedLike.getLikes())</span>
+<span class="pc bpc" id="L62" title="2 of 4 branches missed.">                    || (getData.getDislike() != null &amp;&amp; feedLike.getDislike() != null</span>
+<span class="pc bpc" id="L63" title="2 of 4 branches missed.">                    &amp;&amp; getData.getDislike() &amp;&amp; feedLike.getDislike())) {</span>
+
+<span class="fc" id="L65">                feedLikeRepository.delete(getData);</span>
+<span class="fc" id="L66">                return feedLike;</span>
+<span class="nc bnc" id="L67" title="All 4 branches missed.">            } else if ((feedLike.getDislike() != null &amp;&amp; getData.getLikes() != null</span>
+<span class="nc bnc" id="L68" title="All 4 branches missed.">                    &amp;&amp; (getData.getLikes() &amp;&amp; feedLike.getDislike()))</span>
+<span class="nc bnc" id="L69" title="All 4 branches missed.">                    || (getData.getDislike() != null &amp;&amp; feedLike.getLikes() != null</span>
+<span class="nc bnc" id="L70" title="All 4 branches missed.">                    &amp;&amp; (getData.getDislike() &amp;&amp; feedLike.getLikes()))) {</span>
+<span class="nc" id="L71">                getData.setLikes(feedLike.getLikes());</span>
+<span class="nc" id="L72">                getData.setDislike(feedLike.getDislike());</span>
+<span class="nc" id="L73">                feedLikeRepository.save(getData);</span>
+<span class="nc" id="L74">                sendEmail(feedLike, recipientEmailList);</span>
+<span class="nc" id="L75">                return getData;</span>
+            }
+
+
+        }
+<span class="fc" id="L80">        return saveFeedLike(feedLike, optFeedData, recipientEmailList);</span>
+    }
+
+    private FeedLike saveFeedLike(FeedLike feedLike, Optional&lt;FeedData&gt; optFeedData, List&lt;String&gt; recipientEmailList) {
+<span class="fc" id="L84">        return optFeedData.map(feedData -&gt; {</span>
+<span class="fc" id="L85">            feedLike.setFeedData(feedData);</span>
+<span class="fc" id="L86">            sendEmail(feedLike, recipientEmailList);</span>
+<span class="fc" id="L87">            return feedLikeRepository.save(feedLike);</span>
+<span class="pc" id="L88">        }).orElseThrow(() -&gt; new ExpressionException(&quot;FeedId not found&quot;));</span>
+    }
+
+    private void sendEmail(FeedLike feedLike, List&lt;String&gt; recipientEmailList) {
+<span class="fc" id="L92">        String emailMessage = environment.getProperty(&quot;sendEmailLike&quot;);</span>
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">        if (feedLike.getDislike() != null &amp;&amp; true == feedLike.getDislike()) {</span>
+<span class="fc" id="L94">            emailMessage = environment.getProperty(&quot;sendEmailDislike&quot;);</span>
+        }
+<span class="fc" id="L96">        SendEmailNotification sendEmailNotification = new SendEmailNotification(recipientEmailList,</span>
+<span class="fc" id="L97">                environment.getProperty(&quot;sender&quot;),</span>
+<span class="fc" id="L98">                feedLike.getUserName() + &quot; &quot; + environment.getProperty(&quot;httpTitle&quot;),</span>
+                emailMessage);
+<span class="fc" id="L100">        emailService.sendEmail(sendEmailNotification);</span>
+<span class="fc" id="L101">    }</span>
+
+    public void deleteFeedLike() {
+<span class="fc" id="L104">        feedLikeRepository.deleteAll();</span>
+<span class="fc" id="L105">        System.out.println(&quot;Successfully deleted all tables&quot;);</span>
+<span class="fc" id="L106">    }</span>
+
+    public FeedLike updateFeedLike(int id, FeedLike feedLike) {
+<span class="fc" id="L109">        FeedLike feedLikeRepositoryById = feedLikeRepository.findById(id).orElseThrow();</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        if (feedLikeRepositoryById != null) {</span>
+<span class="fc" id="L111">            feedLikeRepositoryById.setLikes(feedLike.getLikes());</span>
+<span class="fc" id="L112">            feedLikeRepositoryById.setDislike(feedLike.getDislike());</span>
+<span class="fc" id="L113">            feedLikeRepository.save(feedLikeRepositoryById);</span>
+        }
+<span class="fc" id="L115">        return feedLikeRepositoryById;</span>
+    }
+
+    public List&lt;FeedLike&gt; displayAllLikeUsername(int pageNo, int feedId) {
+<span class="fc" id="L119">        int pageSize = Integer.parseInt(environment.getProperty(PAGE_SIZE_KEY));</span>
+<span class="fc" id="L120">        Pageable pageable = PageRequest.of(pageNo, pageSize);</span>
+<span class="fc" id="L121">        Page&lt;FeedLike&gt; usernameList = feedLikeRepository.findUserNameForLikesByFeedId(pageable, feedId);</span>
+<span class="fc" id="L122">        return usernameList.toList();</span>
+    }
+
+    public List&lt;FeedLike&gt; displayAllDisLikeUsername(int pageNo, int feedId) {
+<span class="fc" id="L126">        int pageSize = Integer.parseInt(environment.getProperty(PAGE_SIZE_KEY));</span>
+<span class="fc" id="L127">        Pageable pageable = PageRequest.of(pageNo, pageSize);</span>
+<span class="fc" id="L128">        Page&lt;FeedLike&gt; usernameList = feedLikeRepository.findUserNameForDisLikesByFeedId(pageable, feedId);</span>
+<span class="fc" id="L129">        return usernameList.toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

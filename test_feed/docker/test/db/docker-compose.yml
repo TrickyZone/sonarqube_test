@@ -1,0 +1,14 @@
+# Database container for running tests locally.
+# Author - Gaurav Kumar
+version: '3'
+
+services:
+  feed-service-db:
+    container_name: feed-service-db
+    image: postgres:12.7
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: feed_service
+      POSTGRES_HOST_AUTH_METHOD: trust

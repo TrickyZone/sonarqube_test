@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">feed-service</a> &gt; <a href="index.source.html" class="el_package">com.knoldus.feedservice.model</a> &gt; <span class="el_source">UserActivity.java</span></div><h1>UserActivity.java</h1><pre class="source lang-java linenums">package com.knoldus.feedservice.model;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Date;
+
+<span class="pc bnc" id="L8" title="All 94 branches missed.">@Data</span>
+<span class="fc" id="L9">@NoArgsConstructor</span>
+public class UserActivity {
+<span class="nc" id="L11">    private String feedType;</span>
+<span class="nc" id="L12">    private String username;</span>
+<span class="nc" id="L13">    private Boolean likes;</span>
+<span class="nc" id="L14">    private Boolean dislike;</span>
+<span class="nc" id="L15">    private String contributedBy;</span>
+
+<span class="nc" id="L17">    private String contributionType;</span>
+
+<span class="nc" id="L19">    private String description;</span>
+
+<span class="nc" id="L21">    private String feedcomment;</span>
+
+<span class="nc" id="L23">    private String title;</span>
+
+<span class="fc" id="L25">    private Date feedtime;</span>
+
+<span class="nc" id="L27">   private String lapseTimeDifference;</span>
+
+<span class="fc" id="L29">    public UserActivity(String feedType, String username, Boolean likes, Boolean dislike, String contributedBy, String contributionType, String description, String feedcomment, String title, Date feedtime) {</span>
+<span class="fc" id="L30">        this.feedType = feedType;</span>
+<span class="fc" id="L31">        this.username = username;</span>
+<span class="fc" id="L32">        this.likes = likes;</span>
+<span class="fc" id="L33">        this.dislike = dislike;</span>
+<span class="fc" id="L34">        this.contributedBy = contributedBy;</span>
+<span class="fc" id="L35">        this.contributionType = contributionType;</span>
+<span class="fc" id="L36">        this.description = description;</span>
+<span class="fc" id="L37">        this.feedcomment = feedcomment;</span>
+<span class="fc" id="L38">        this.title = title;</span>
+<span class="fc" id="L39">        this.feedtime = feedtime;</span>
+<span class="fc" id="L40">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
