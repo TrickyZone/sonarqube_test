@@ -1,1 +1,0 @@
-# sonarqube_test
