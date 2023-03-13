@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      - master # the name of your main branch
+      - master 
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0  
 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
@@ -36,94 +36,7 @@ jobs:
       - name: Build and analyze
         working-directory: test_feed/
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
-        run: mvn clean verify sonar:sonar  -Dsonar.projectKey=mvn-project 
-            # -Dsonar.host.url=http://44.204.155.24:9000 \
-            # -Dsonar.login=sqp_a13bac1e95263909f84eceec6f63f8c462619763
-
-
-
-
-
-
-
-
-# on:
-#   # Trigger analysis when pushing to your main branches, and when creating a pull request.
-#   push:
-#     branches:
-#       - main
-#       - master
-#       - develop
-#       - 'releases/**'
-#   pull_request:
-#       types: [opened, synchronize, reopened]
-
-# name: Main Workflow
-# jobs:
-#   sonarqube:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - uses: actions/checkout@v3
-#       with:
-#         # Disabling shallow clone is recommended for improving relevancy of reporting
-#         fetch-depth: 0
-#     - name: SonarQube Scan
-#       uses: sonarsource/sonarqube-scan-action@master
-#       with:
-#        projectBaseDir: test_feed/src
-#       env:
-#         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#         SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
-
-
-
-# name: SonarCloud
-# on:
-#   push:
-#     branches:
-#       - master
-#   pull_request:
-#     types: [opened, synchronize, reopened]
-# jobs:
-#   build:
-#     name: Build and analyze
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#         with:
-#           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-#       - name: Set up JDK 11
-#         uses: actions/setup-java@v3
-#         with:
-#           java-version: 11
-#           distribution: 'zulu' # Alternative distribution options are available.
-
-
-#       - name: Cache SonarCloud packages
-#         uses: actions/cache@v3
-#         with:
-#           path: ~/.sonar/cache
-#           key: ${{ runner.os }}-sonar
-#           restore-keys: ${{ runner.os }}-sonar
-
-#       - name: Cache Maven packages
-#         uses: actions/cache@v3
-#         with:
-#           path: ~/.m2
-#           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-#           restore-keys: ${{ runner.os }}-m2
-
-#       - name: Build and analyze
-#         working-directory: test_feed/
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-#         run: mvn clean verify sonar:sonar \    
-#             -Dsonar.projectKey=mvn-project \
-#             -Dsonar.host.url=http://44.204.155.24:9000 \
-#             -Dsonar.login=sqp_a13bac1e95263909f84eceec6f63f8c462619763
-
+        run: mvn clean verify sonar:sonar  -Dsonar.projectKey=mvn-project
