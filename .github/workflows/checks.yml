@@ -90,6 +90,7 @@ jobs:
           java-version: '17'
 
     - name: Build with Maven
+      working-directory: "test_feed/"
       run: mvn -B clean package
 
     - name: SonarQube Scan
