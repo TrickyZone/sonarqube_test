@@ -1,43 +1,43 @@
-name: SonarQube Scan # Give a name to the GitHub action.
+# name: SonarQube Scan # Give a name to the GitHub action.
 
-on:
-  push: # Run the action when a push event occurs.
-    branches:
-      - master # Only run the action on the master branch.
+# on:
+#   push: # Run the action when a push event occurs.
+#     branches:
+#       - master # Only run the action on the master branch.
 
-jobs:
-  sonarqube:
-    runs-on: ubuntu-latest # Use the latest version of the Ubuntu operating system as the runner for the job.
-    steps:
-      - uses: actions/checkout@v2 # Check out the code from the repository using the GitHub checkout action.
+# jobs:
+#   sonarqube:
+#     runs-on: ubuntu-latest # Use the latest version of the Ubuntu operating system as the runner for the job.
+#     steps:
+#       - uses: actions/checkout@v2 # Check out the code from the repository using the GitHub checkout action.
 
-      - name: Set up JDK 11 # Set up the Java Development Kit (JDK) version 11 using the GitHub setup-java action.
-        # uses: actions/setup-java@v2
-        # with:
-        #   java-version: '11'
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '17'
+#       - name: Set up JDK 11 # Set up the Java Development Kit (JDK) version 11 using the GitHub setup-java action.
+#         # uses: actions/setup-java@v2
+#         # with:
+#         #   java-version: '11'
+#         uses: actions/setup-java@v3
+#         with:
+#           distribution: 'temurin' # See 'Supported distributions' for available options
+#           java-version: '17'
 
 
-      - name: Cache SonarQube dependencies # Cache SonarQube dependencies to speed up the scan using the GitHub cache action.
-        uses: actions/cache@v2
-        with:
-          path: ~/.sonar/cache # Specify the path to the SonarQube cache directory.
-          key: ${{ runner.os }}-sonar # Create a unique key based on the operating system used by the runner.
-          restore-keys: |
-            ${{ runner.os }}-sonar # Restore the cache based on the operating system used by the runner.
+#       - name: Cache SonarQube dependencies # Cache SonarQube dependencies to speed up the scan using the GitHub cache action.
+#         uses: actions/cache@v2
+#         with:
+#           path: ~/.sonar/cache # Specify the path to the SonarQube cache directory.
+#           key: ${{ runner.os }}-sonar # Create a unique key based on the operating system used by the runner.
+#           restore-keys: |
+#             ${{ runner.os }}-sonar # Restore the cache based on the operating system used by the runner.
 
-      - name: SonarQube Scan
-      #   uses: kitabisa/sonarqube-action@v1.2.0
-        if: github.event_name == 'push'
-        working-directory: test_feed
-        run:
-          mvn clean verify sonar:sonar \
-          -Dsonar.projectKey=mvn-project \
-          -Dsonar.host.url=http://44.204.155.24:9000 \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+#       - name: SonarQube Scan
+#       #   uses: kitabisa/sonarqube-action@v1.2.0
+#         if: github.event_name == 'push'
+#         working-directory: test_feed
+#         run:
+#           mvn clean verify sonar:sonar \
+#           -Dsonar.projectKey=mvn-project \
+#           -Dsonar.host.url=http://44.204.155.24:9000 \
+#           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
           # mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         # with:
@@ -73,32 +73,32 @@ jobs:
 
 
 
-# name: SonarQube Scan
-# on: [push, pull_request]
+name: SonarQube Scan
+on: [push, pull_request]
 
-# jobs:
-#   sonarqube:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v2
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-#     - name: Set up JDK
-#       uses: actions/setup-java@v2
-#       with:
-#         java-version: '11'
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
 
-#     - name: Build with Maven
-#       run: mvn -B clean package
+    - name: Build with Maven
+      run: mvn -B clean package
 
-    # - name: SonarQube Scan
-    #   uses: sonarsource/sonarqube-action@v1
-    #   with:
-    #     # projectKey: <your-project-key>
-    #     # projectName: <your-project-name>
-    #     # projectVersion: <your-project-version>
-    #     serverUrl: ${{ secrets.SONAR_HOST }}
-    #     token: ${{ secrets.SONARQUBE_TOKEN }}
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-action@v1
+      with:
+        # projectKey: <your-project-key>
+        # projectName: <your-project-name>
+        # projectVersion: <your-project-version>
+        serverUrl: ${{ secrets.SONAR_HOST }}
+        token: ${{ secrets.SONAR_TOKEN }}
 
 
 
