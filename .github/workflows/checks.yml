@@ -96,4 +96,4 @@ jobs:
         host: ${{ secrets.SONAR_HOST }}
         login: ${{ secrets.SONAR_TOKEN }}
         projectBaseDir: "test_feed/"
-        projectKey: "feed_service"
+        projectKey: "test"
