@@ -208,6 +208,12 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.7</version>
 			</plugin>
+			<pluginRepositories>
+				<pluginRepository> 
+					<id>maven2</id> 
+					<url>https://repo.maven.apache.org/maven2/</url> 
+				</pluginRepository> 
+			</pluginRepositories>
 
 		</plugins>
 
