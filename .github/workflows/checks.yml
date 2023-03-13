@@ -92,7 +92,7 @@ jobs:
       run: mvn -B clean package
 
     - name: SonarQube Scan
-      uses: sonarsource/sonarqube-action@v1
+      uses: sonarsource/sonarqube-scan-action@master
       with:
         # projectKey: <your-project-key>
         # projectName: <your-project-name>
