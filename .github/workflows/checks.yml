@@ -1,237 +1,46 @@
-# name: SonarQube Scan # Give a name to the GitHub action.
-
-# on:
-#   push: # Run the action when a push event occurs.
-#     branches:
-#       - master # Only run the action on the master branch.
-
-# jobs:
-#   sonarqube:
-#     runs-on: ubuntu-latest # Use the latest version of the Ubuntu operating system as the runner for the job.
-#     steps:
-#       - uses: actions/checkout@v2 # Check out the code from the repository using the GitHub checkout action.
-
-#       - name: Set up JDK 11 # Set up the Java Development Kit (JDK) version 11 using the GitHub setup-java action.
-#         # uses: actions/setup-java@v2
-#         # with:
-#         #   java-version: '11'
-#         uses: actions/setup-java@v3
-#         with:
-#           distribution: 'temurin' # See 'Supported distributions' for available options
-#           java-version: '17'
-
-
-#       - name: Cache SonarQube dependencies # Cache SonarQube dependencies to speed up the scan using the GitHub cache action.
-#         uses: actions/cache@v2
-#         with:
-#           path: ~/.sonar/cache # Specify the path to the SonarQube cache directory.
-#           key: ${{ runner.os }}-sonar # Create a unique key based on the operating system used by the runner.
-#           restore-keys: |
-#             ${{ runner.os }}-sonar # Restore the cache based on the operating system used by the runner.
-
-#       - name: SonarQube Scan
-#       #   uses: kitabisa/sonarqube-action@v1.2.0
-#         if: github.event_name == 'push'
-#         working-directory: test_feed
-#         run:
-#           mvn clean verify sonar:sonar \
-#           -Dsonar.projectKey=mvn-project \
-#           -Dsonar.host.url=http://44.204.155.24:9000 \
-#           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
-          # mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-        # with:
-        #   host: ${{ secrets.SONARQUBE_HOST }}
-        #   login: ${{ secrets.SONARQUBE_TOKEN }}
-      
-      
-      
-      # - name: SonarQube Scan
-      #   uses: sonarsource/sonarqube-scan-action@master
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
-      # - name: SonarQube Scan # Run the SonarQube scan using the sonarsource/sonarqube-scan-action.
-      #   uses: sonarsource/sonarqube-scan-action@v1
-      #   with:
-      #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
-      #     token: ${{ secrets.SONAR_TOKEN }}
-      #     # host: ${{ secrets.SONAR_HOST }}
-      #     # login: ${{ secrets.SONAR_TOKEN }}        
-      #     # sonar-token: ${{ secrets.SONAR_TOKEN }} # Pass the SonarQube token as a secret.
-      #     project-key: my-java-app # Specify the project key used by SonarQube.
-      #     project-name: My Java Application # Specify the project name used by SonarQube.
-      #     project-version: '1.0' # Specify the project version used by SonarQube.
-      #     sources: '.' # Specify the source directory for the scan.
-      #     extra-properties: | # Specify additional properties for the scan.
-      #       sonar.java.binaries=**/target/classes # Specify the binary directory for the scan.
-      #       sonar.java.libraries=**/target/lib/**/*.jar # Specify the library directory for the scan.
-
-
-
-
+name: SonarCloud
 on:
-  # Trigger analysis when pushing to your main branches, and when creating a pull request.
   push:
     branches:
-      - main
       - master
-      - develop
-      - 'releases/**'
   pull_request:
-      types: [opened, synchronize, reopened]
-
-name: Main Workflow
+    types: [opened, synchronize, reopened]
 jobs:
-  sonarqube:
+  build:
+    name: Build and analyze
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
-    - name: SonarQube Scan
-      uses: sonarsource/sonarqube-scan-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'zulu' # Alternative distribution options are available.
 
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-# name: SonarQube Scan
-# on: [push, pull_request]
+        run: mvn clean verify sonar:sonar \    
+            -Dsonar.projectKey=mvn-project \
+            -Dsonar.host.url=http://44.204.155.24:9000 \
+            -Dsonar.login=sqp_a13bac1e95263909f84eceec6f63f8c462619763
 
-# jobs:
-#   sonarqube:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v2
-
-#     - name: Set up JDK 11 # Set up the Java Development Kit (JDK) version 11 using the GitHub setup-java action.
-#       uses: actions/setup-java@v3
-#       with:
-#           distribution: 'temurin' # See 'Supported distributions' for available options
-#           java-version: '17'
-
-#     - name: Build with Maven
-#       working-directory: "test_feed/"
-#       run: mvn -B clean package
-
-#     - name: SonarQube Scan
-#       uses: sonarsource/sonarqube-scan-action@master
-#       with:
-#         # projectKey: <your-project-key>
-#         # projectName: <your-project-name>
-#         # projectVersion: <your-project-version>
-#         serverUrl: ${{ secrets.SONAR_HOST }}
-#         token: ${{ secrets.SONAR_TOKEN }}
-
-
-
-
-
-
-
-
-# # name: Check feed
-
-# # on:
-# #   pull_request:
-# #     branches:
-# #       - master
-# #     # paths:
-# #     #   - 'test_feed/**/*'
-# #   push:
-# #     branches:
-# #       - master
-# #     # paths:
-# #     #   - 'test_feed/**/*'
-
-# # env:
-# #   ORG: test
-# #   PROJECT_NAME: learning
-# #   AUTHOR: MuZakkir Saifi
-# # jobs:
-# #   check_feedservice:
-# #     env:
-# #       MODULE_NAME: feed_service
-# #     runs-on: ubuntu-latest
-# #     steps:
-# #     - uses: actions/checkout@v2
-
-# #     - name: Set up JDK 1.8
-# #       uses: actions/setup-java@v1
-# #       with:
-# #         java-version: 1.8
-        
-# #     # - name: Cache SBT
-# #     #   uses: actions/cache@v2
-# #     #   with:
-# #     #     path: |
-# #     #       ~/.ivy2/cache
-# #     #       ~/.sbt
-# #     #     key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-
-# #     - name: Run Horusec
-# #       if: github.event_name == 'push'
-# #       env:
-# #         WORKING_DIR: test_feed
-# #         AUTHOR: MuZakkir
-# #         HORUSEC_CLI_RETURN_ERROR_IF_FOUND_VULNERABILITY: "false"
-# #       id: run_horusec
-# #       uses: fike/horusec-action@v0.2.2
-# #       with:
-# #         arguments: -p ./$WORKING_DIR --config-file-path=$WORKING_DIR/horusec-config.json -O $WORKING_DIR/sonarqube.json --return-error=false
-
-# #     # - name: Run test cases and generate reports for Feed
-# #     #   working-directory: test_feed
-# #     #   env:
-# #     #     URL: "jdbc:h2:mem:test;MODE=Oracle;"
-# #     #     DRIVER: "org.h2.Driver"
-# #     #     USERNAME: 
-# #     #     PASSWORD:
-# #     #   run: |
-# #     #     sudo timedatectl set-timezone Asia/Kolkata
-# #     #     sbt cpd
-# #     #     sbt scapegoat
-# #     #     sbt scalastyle  
-# #     #     sbt coverage test coverageReport      
-
-# #     - name: Sonar coverage report
-# #       if: github.event_name == 'push'
-# #       working-directory: test_feed
-# #       run:
-# #         # sbt sonarScan 
-# #         mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
-
-# on:
-#   # Trigger analysis when pushing in master or pull requests, and when creating
-#   # a pull request. 
-#   push:
-#     branches:
-#       - master
-#   pull_request:
-#       types: [opened, synchronize, reopened]
-
-# name: SonarQube Scan
-# jobs:
-#   sonarqube:
-#     name: SonarQube Trigger
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checking out
-#       uses: actions/checkout@master
-#       with:
-#         # Disabling shallow clone is recommended for improving relevancy of reporting
-#         fetch-depth: 0
-#     - name: SonarQube Scan
-#       uses: kitabisa/sonarqube-action@v1.2.0
-#       with:
-#         host: ${{ secrets.SONAR_HOST }}
-#         login: ${{ secrets.SONAR_TOKEN }}
-#         # projectBaseDir: "test_feed/**/*"
-#         # projectKey: "feed_service"

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.knoldus.feedservice.service.FeedLikeServiceTest
+-------------------------------------------------------------------------------
+Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.024 s - in com.knoldus.feedservice.service.FeedLikeServiceTest
