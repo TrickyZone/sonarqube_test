@@ -1,20 +1,65 @@
-name: SonarQube Scan
-on: [push, pull_request]
+name: SonarQube Scan # Give a name to the GitHub action.
+
+on:
+  push: # Run the action when a push event occurs.
+    branches:
+      - master # Only run the action on the master branch.
 
 jobs:
   sonarqube:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Use the latest version of the Ubuntu operating system as the runner for the job.
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v2 # Check out the code from the repository using the GitHub checkout action.
+      - name: Set up JDK 11 # Set up the Java Development Kit (JDK) version 11 using the GitHub setup-java action.
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
 
-    - name: Set up JDK
-      uses: actions/setup-java@v2
-      with:
-        java-version: '11'
 
-    - name: Build with Maven
-      run: mvn -B clean package
+      - name: Cache SonarQube dependencies # Cache SonarQube dependencies to speed up the scan using the GitHub cache action.
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache # Specify the path to the SonarQube cache directory.
+          key: ${{ runner.os }}-sonar # Create a unique key based on the operating system used by the runner.
+          restore-keys: |
+            ${{ runner.os }}-sonar # Restore the cache based on the operating system used by the runner.
+
+
+      - name: SonarQube Scan # Run the SonarQube scan using the sonarsource/sonarqube-scan-action.
+        uses: sonarsource/sonarqube-scan-action@v1
+        with:
+          sonar-token: ${{ secrets.SONAR_TOKEN }} # Pass the SonarQube token as a secret.
+          project-key: my-java-app # Specify the project key used by SonarQube.
+          project-name: My Java Application # Specify the project name used by SonarQube.
+          project-version: '1.0' # Specify the project version used by SonarQube.
+          sources: '.' # Specify the source directory for the scan.
+          extra-properties: | # Specify additional properties for the scan.
+            sonar.java.binaries=**/target/classes # Specify the binary directory for the scan.
+            sonar.java.libraries=**/target/lib/**/*.jar # Specify the library directory for the scan.
+
+
+
+
+
+
+
+# name: SonarQube Scan
+# on: [push, pull_request]
+
+# jobs:
+#   sonarqube:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+
+#     - name: Set up JDK
+#       uses: actions/setup-java@v2
+#       with:
+#         java-version: '11'
+
+#     - name: Build with Maven
+#       run: mvn -B clean package
 
     # - name: SonarQube Scan
     #   uses: sonarsource/sonarqube-action@v1
